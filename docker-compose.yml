@@ -1,5 +1,7 @@
 services:
   app:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: ./docker/php/Dockerfile
@@ -16,6 +18,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
 
   web:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: ./docker/nginx/Dockerfile
@@ -33,6 +37,8 @@ services:
       - "8025:8025"
 
   db:
+    env_file:
+      - .env
     image: mysql:8
     platform: linux/amd64
     environment:

@@ -27,6 +27,7 @@ return [
     */
 
     'env' => env('APP_ENV', 'production'),
+    'is_production' => env('APP_ENV', 'production') === 'production',
 
     /*
     |--------------------------------------------------------------------------

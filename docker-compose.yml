@@ -30,8 +30,8 @@ services:
     volumes:
       - ./app/:/app
 
-  mailhog:
-    image: mailhog/mailhog
+  mailpit:
+    image: axllent/mailpit
     ports:
       - "1025:1025"
       - "8025:8025"

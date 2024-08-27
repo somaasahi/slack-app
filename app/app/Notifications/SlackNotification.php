@@ -51,9 +51,14 @@ class SlackNotification extends Notification
 
     public function toSlack(SlackService $notifiable)
     {
+        // NOTE: ->to()の引数にはslackユーザIDを指定すると、個別に通知が可能
+        // $to = "slackユーザID";
+
+        $to = $this->channel['channel'];
+
         $message = (new SlackMessage())
             ->from($this->channel['username'], $this->channel['icon'])
-            ->to($this->channel['channel'])
+            ->to($to)
             ->content($this->message);
 
         if (!is_null($this->attachment) && is_array($this->attachment)) {

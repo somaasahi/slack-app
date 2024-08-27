@@ -52,30 +52,39 @@ class SlackNotification extends Notification
     public function toSlack(SlackService $notifiable)
     {
         // NOTE: ->to()の引数にはslackユーザIDを指定すると、個別に通知が可能
-        // $to = "slackユーザID";
+        $to = "U04PQ7R78DQ";
 
-        $to = $this->channel['channel'];
+        // $to = $this->channel['channel'];
 
         $message = (new SlackMessage())
             ->from($this->channel['username'], $this->channel['icon'])
             ->to($to)
-            ->content($this->message);
-
-        if (!is_null($this->attachment) && is_array($this->attachment)) {
-            $message->attachment(function ($attachment) {
-                if (isset($this->attachment['title'])) {
-                    $attachment->title($this->attachment['title']);
-                }
-                if (isset($this->attachment['content'])) {
-                    $attachment->content($this->attachment['content']);
-                }
-                if (isset($this->attachment['field']) && is_array($this->attachment['field'])) {
-                    foreach ($this->attachment['field'] as $k => $v) {
-                        $attachment->field($k, $v);
-                    }
-                }
+            ->content($this->message)
+            ->attachment(function ($attachment) {
+                $attachment->title('質問内容はこちらです。')
+                    ->content('以下のオプションから選んでください')
+                    ->callbackId('response_action')  // Slack APIでのアクション識別用
+                    ->action('選択肢1', 'http://www.hogehoge.example', 'default')
+                    ->action('選択肢2', 'http://www.hogehoge.example', 'default')
+                    ->action('選択肢3', 'http://www.hogehoge.example', 'default')
+                    ->action('選択肢4', 'http://www.hogehoge.example', 'default');
             });
-        }
+
+        // if (!is_null($this->attachment) && is_array($this->attachment)) {
+        //     $message->attachment(function ($attachment) {
+        //         if (isset($this->attachment['title'])) {
+        //             $attachment->title($this->attachment['title']);
+        //         }
+        //         if (isset($this->attachment['content'])) {
+        //             $attachment->content($this->attachment['content']);
+        //         }
+        //         if (isset($this->attachment['field']) && is_array($this->attachment['field'])) {
+        //             foreach ($this->attachment['field'] as $k => $v) {
+        //                 $attachment->field($k, $v);
+        //             }
+        //         }
+        //     });
+        // }
         return $message;
     }
 }

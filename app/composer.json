@@ -7,9 +7,11 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^11.9",
+        "laravel/slack-notification-channel": "^3.3",
         "laravel/tinker": "^2.9"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^3.1",
         "fakerphp/faker": "^1.23",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.26",

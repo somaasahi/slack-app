@@ -20,7 +20,7 @@ class OAuthController extends Controller
         session(['oauth_state' => $state]);
 
         $query = http_build_query([
-            'scope' => 'identity.basic',
+            'scope' => 'tokens.basic',
             'client_id' => config('slack.oauth.client_id'),
             'redirect_uri' => config('slack.oauth.redirect_uri'),
             'state' => $state,
@@ -66,7 +66,7 @@ class OAuthController extends Controller
         // TODO: 暗号化しDBに保存
         $token = $data['access_token'];
 
-        // NOTE: 契約したワークスペースでチャンネルを作成する?
+        // 契約したワークスペースでチャンネルを作成する?
 
         return redirect()->route('oauth.complete');
     }

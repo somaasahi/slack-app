@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -41,7 +42,7 @@ class OAuthController extends Controller
             return response('slack returned error.',500);
         }
 
-        $guzzile = new \GuzzleHttp\Client();
+        $guzzle = new Client();
 
         $params = [
             'code' => $request->input('code'),
@@ -53,7 +54,7 @@ class OAuthController extends Controller
             'form_params' => $params,
         ];
 
-        $response = $guzzile->post(config('slack.oauth.oauth_url'), $option);
+        $response = $guzzle->post(config('slack.oauth.oauth_url'), $option);
         $body = $response->getBody();
 
         $data = json_decode( (String)$body, true);
@@ -64,6 +65,8 @@ class OAuthController extends Controller
 
         // TODO: 暗号化しDBに保存
         $token = $data['access_token'];
+
+        // NOTE: 契約したワークスペースでチャンネルを作成する?
 
         return redirect()->route('oauth.complete');
     }

@@ -18,9 +18,11 @@ return [
     'team'=>'TDWRKFV0S',
 
     'oauth' =>[
+        'authorize_url' => 'https://slack.com/oauth/authorize',
+        'oauth_url' => 'https://slack.com/api/oauth.access',
         'signing_secret' => env('SLACK_SIGNING_SECRET'),
         'client_secret' => env('SLACK_CLIENT_SECRET'),
         'client_id' => env('SLACK_CLIENT_ID'),
-        'redirect_url' => env('SLACK_REDIRECT_URL'),
+        'redirect_uri' => env('SLACK_REDIRECT_URI'),
     ],
 ];

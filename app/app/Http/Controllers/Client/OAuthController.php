@@ -20,7 +20,7 @@ class OAuthController extends Controller
         session(['oauth_state' => $state]);
 
         $query = http_build_query([
-            'scope' => 'chat:write',
+            'scope' => config('slack.oauth.scope'),
             'client_id' => config('slack.oauth.client_id'),
             'redirect_uri' => config('slack.oauth.redirect_uri'),
             'state' => $state,

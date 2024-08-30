@@ -73,7 +73,7 @@ Route::get('/button', function () {
 
 
 // ②ボタン押下時にモーダルを開く
-Route::post('/slack/modals', function (Request $request) {
+Route::post('/slack/modal', function (Request $request) {
 
     $data = json_decode($request->getContent(), true);
 

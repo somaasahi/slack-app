@@ -25,5 +25,6 @@ return [
         'client_secret' => env('SLACK_CLIENT_SECRET'),
         'client_id' => env('SLACK_CLIENT_ID'),
         'redirect_uri' => env('SLACK_REDIRECT_URI'),
+        'verification_token' => env('SLACK_VERIFICATION_TOKEN'),
     ],
 ];

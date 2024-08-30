@@ -3,7 +3,9 @@
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\OAuthController;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -51,7 +53,7 @@ Route::get('/button', function () {
             ],
             'json' => [
                 'channel' => $id,
-                'text' => 'クイズを始めます',
+                'text' => '今日の診断を始めましょう！',
                 'blocks' => $blocks
             ]
         ]);
@@ -71,11 +73,30 @@ Route::get('/button', function () {
 
 
 // ②ボタン押下時にモーダルを開く
-Route::post('/slack/modal', function (\Illuminate\Http\Request $request) {
-    $payload = json_decode($request->input('payload'), true);
-    $trigger_id = $payload['trigger_id'];
+Route::post('/slack/modals', function (Request $request) {
 
-    $blocks = json_encode([
+    $data = json_decode($request->getContent(), true);
+
+    // URL検証
+    if (isset($data['type']) && $data['type'] === 'url_verification') {
+        $verificationToken = config('slack.verification_token');
+        if ($data['token'] === $verificationToken) {
+            return response()->json(['challenge' => $data['challenge']]);
+        } else {
+            Log::warning('Verification token mismatch.', ['received_token' => $data['token']]);
+            return response()->json(['error' => 'Verification token mismatch'], 403);
+        }
+    }
+
+    // payloadはこの時点で必ずしも存在するとは限らないため、エラーハンドリングを追加
+    $payload = json_decode($request->input('payload'), true);
+    if (!$payload) {
+        Log::error('Payload is missing or invalid');
+        return response()->json(['error' => 'Payload is missing or invalid'], 400);
+    }
+
+    $trigger_id = $payload['trigger_id'];
+    $blocks = [
         [
             "type" => "section",
             "text" => [
@@ -100,32 +121,33 @@ Route::post('/slack/modal', function (\Illuminate\Http\Request $request) {
                 "text" => "ヤクルトジョアは誰のものか回答してください。"
             ]
         ]
-    ]);
+    ];
 
-    $client = new \GuzzleHttp\Client();
-    $client->post('https://slack.com/api/views.open', [
-        'headers' => [
-            'Authorization' => 'Bearer ' . env('SLACK_BOT_USER_TOKEN'),
-            'Content-Type' => 'application/json;charset=utf-8'
-        ],
-        'json' => [
-            'trigger_id' => $trigger_id,
-            'view' => [
-                'type' => 'modal',
-                'title' => [
-                    'type' => 'plain_text',
-                    'text' => 'クイズ'
-                ],
-                'submit' => [
-                    'type' => 'plain_text',
-                    'text' => '送信'
-                ],
-                'blocks' => $blocks
-            ]
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . config('services.slack.bot_user_token'),
+        'Content-Type' => 'application/json;charset=utf-8'
+    ])->post('https://slack.com/api/views.open', [
+        'trigger_id' => $trigger_id,
+        'view' => [
+            'type' => 'modal',
+            'title' => [
+                'type' => 'plain_text',
+                'text' => 'クイズ'
+            ],
+            'submit' => [
+                'type' => 'plain_text',
+                'text' => '送信'
+            ],
+            'blocks' => $blocks
         ]
     ]);
 
-    return response()->json(['status' => 'success']);
+    if ($response->successful()) {
+        return response()->json(['status' => 'success']);
+    } else {
+        Log::error('Failed to open Slack modal', ['response' => $response->body()]);
+        return response()->json(['error' => 'Failed to communicate with Slack API'], 500);
+    }
 });
 
 // Route::get('/slack', function () {

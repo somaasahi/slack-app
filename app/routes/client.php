@@ -74,12 +74,11 @@ Route::get('/button', function () {
 
 // ②ボタン押下時にモーダルを開く
 Route::post('/slack/modal', function (Request $request) {
-
     $data = json_decode($request->getContent(), true);
 
     // URL検証
     if (isset($data['type']) && $data['type'] === 'url_verification') {
-        $verificationToken = config('slack.verification_token');
+        $verificationToken = config('slack.oauth.verification_token');
         if ($data['token'] === $verificationToken) {
             return response()->json(['challenge' => $data['challenge']]);
         } else {

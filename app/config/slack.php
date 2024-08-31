@@ -15,7 +15,7 @@ return [
         ],
     ],
 
-    'team'=>'TDWRKFV0S',
+    'team'=> env('SLACK_TEAM_ID'),
 
     'oauth' =>[
         'authorize_url' => 'https://slack.com/oauth/v2/authorize',

@@ -91,7 +91,7 @@ Route::post('/slack/modal', function (Request $request) {
         return response()->json(['error' => 'Payload is missing or invalid'], 400);
     }
 
-    Log::info($payload);
+    Log::info($payload['type']);
 
     // モーダルを開く
     if ($payload['type'] === 'block_actions') {
@@ -210,7 +210,6 @@ Route::post('/slack/modal', function (Request $request) {
             'view_id' => $viewId,
             'view' => [
                 'type' => 'modal',
-                'callback_id' => 'submit_report',
                 'title' => [
                     'type' => 'plain_text',
                     'text' => date('Y/m/d'),

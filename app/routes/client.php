@@ -73,6 +73,10 @@ Route::get('/button', function () {
 
 // ②ボタン押下時にモーダルを開く
 Route::post('/slack/modal', function (Request $request) {
+
+    // 受信をSlackにサーバーに応答
+    response()->json(['status' => 'received'])->send();
+
     $data = json_decode($request->getContent(), true);
     // URL検証
     if (isset($data['type']) && $data['type'] === 'url_verification') {
@@ -90,8 +94,6 @@ Route::post('/slack/modal', function (Request $request) {
         Log::error('Payload is missing or invalid');
         return response()->json(['error' => 'Payload is missing or invalid'], 400);
     }
-
-    Log::info($payload['type']);
 
     // モーダルを開く
     if ($payload['type'] === 'block_actions') {
@@ -231,12 +233,12 @@ Route::post('/slack/modal', function (Request $request) {
                 ],
             ],
         ]);
+    }
 
-        if ($response->successful()) {
-            return response()->json(['status' => 'success']);
-        } else {
-            return response()->json(['status' => 'error', 'message' => $response->body()]);
-        }
+    if ($response->successful()) {
+        return response()->json(['status' => 'success']);
+    } else {
+        return response()->json(['status' => 'error', 'message' => $response->body()]);
     }
 });
 

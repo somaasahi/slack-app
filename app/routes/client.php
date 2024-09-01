@@ -105,7 +105,6 @@ Route::post('/slack/modal', function (Request $request) {
             'trigger_id' => $payload['trigger_id'],
             'view' => [
                 'type' => 'modal',
-                'callback_id' => 'submit_report',
                 'title' => [
                     'type' => 'plain_text',
                     'text' => date('Y/m/d'),
@@ -227,7 +226,7 @@ Route::post('/slack/modal', function (Request $request) {
                         "type" => "section",
                         "text" => [
                             "type" => "mrkdwn",
-                            "text" => "記録しました。"
+                            "text" => "記録しました。" . "\n" . "※記録に時間がかかった場合に警告が表示されますが、正常に処理されています。"
                         ]
                     ]
                 ],

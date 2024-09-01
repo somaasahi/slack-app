@@ -39,7 +39,6 @@ Route::get('/button', function () {
                     ],
                     "style" => "primary",
                     "value" => "report-start",
-                    "action_id" => "report-start"
                 ]
             ]
         ]
@@ -75,7 +74,6 @@ Route::get('/button', function () {
 // ②ボタン押下時にモーダルを開く
 Route::post('/slack/modal', function (Request $request) {
     $data = json_decode($request->getContent(), true);
-
     // URL検証
     if (isset($data['type']) && $data['type'] === 'url_verification') {
         $verificationToken = config('slack.oauth.verification_token');
@@ -93,113 +91,153 @@ Route::post('/slack/modal', function (Request $request) {
         return response()->json(['error' => 'Payload is missing or invalid'], 400);
     }
 
-    $response = Http::withHeaders([
-        'Authorization' => 'Bearer ' . env('SLACK_BOT_USER_TOKEN'),
-        'Content-Type' => 'application/json',
-    ])->post('https://slack.com/api/views.open', [
-        'trigger_id' => $payload['trigger_id'],
-        'view' => [
-            'type' => 'modal',
-            'callback_id' => 'submit_report',
-            'title' => [
-                'type' => 'plain_text',
-                'text' => date('Y/m/d'),
-                'emoji' => true,
-            ],
-            'submit' => [
-                'type' => 'plain_text',
-                'text' => '記録',
-                'emoji' => true,
-            ],
-            'close' => [
-                'type' => 'plain_text',
-                'text' => '閉じる',
-                'emoji' => true,
-            ],
-            'blocks' => [
-                [
-                    "type" => "section",
-                    "text" => [
-                        "type" => "mrkdwn",
-                        "text" => "今日の心の状態を教えてください。"
-                    ]
+    Log::info($payload);
+
+    // モーダルを開く
+    if ($payload['type'] === 'block_actions') {
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . env('SLACK_BOT_USER_TOKEN'),
+            'Content-Type' => 'application/json',
+        ])->post('https://slack.com/api/views.open', [
+            'trigger_id' => $payload['trigger_id'],
+            'view' => [
+                'type' => 'modal',
+                'callback_id' => 'submit_report',
+                'title' => [
+                    'type' => 'plain_text',
+                    'text' => date('Y/m/d'),
+                    'emoji' => true,
                 ],
-                [
-                    "type" => "actions",
-                    "elements" => [
-                        [
-                            "type" => "radio_buttons",
-                            "options" => [
-                                [
-                                    "text" => [
-                                        "type" => "plain_text",
-                                        "text" => "とても良い",
-                                        "emoji" => true
+                'submit' => [
+                    'type' => 'plain_text',
+                    'text' => '記録',
+                    'emoji' => true,
+                ],
+                'close' => [
+                    'type' => 'plain_text',
+                    'text' => '閉じる',
+                    'emoji' => true,
+                ],
+                'blocks' => [
+                    [
+                        "type" => "section",
+                        "text" => [
+                            "type" => "mrkdwn",
+                            "text" => "今日の心の状態を教えてください。"
+                        ]
+                    ],
+                    [
+                        "type" => "actions",
+                        "elements" => [
+                            [
+                                "type" => "radio_buttons",
+                                "options" => [
+                                    [
+                                        "text" => [
+                                            "type" => "plain_text",
+                                            "text" => "とても良い",
+                                            "emoji" => true
+                                        ],
+                                        "value" => "option_1"
                                     ],
-                                    "value" => "option_1"
+                                    [
+                                        "text" => [
+                                            "type" => "plain_text",
+                                            "text" => "良い",
+                                            "emoji" => true
+                                        ],
+                                        "value" => "option_2"
+                                    ],
+                                    [
+                                        "text" => [
+                                            "type" => "plain_text",
+                                            "text" => "いつも通り",
+                                            "emoji" => true
+                                        ],
+                                        "value" => "option_3"
+                                    ],
+                                    [
+                                        "text" => [
+                                            "type" => "plain_text",
+                                            "text" => "もやもやしている",
+                                            "emoji" => true
+                                        ],
+                                        "value" => "option_4"
+                                    ],
+                                    [
+                                        "text" => [
+                                            "type" => "plain_text",
+                                            "text" => "嫌な気分",
+                                            "emoji" => true
+                                        ],
+                                        "value" => "option_5"
+                                    ]
                                 ],
-                                [
-                                    "text" => [
-                                        "type" => "plain_text",
-                                        "text" => "良い",
-                                        "emoji" => true
-                                    ],
-                                    "value" => "option_2"
-                                ],
-                                [
-                                    "text" => [
-                                        "type" => "plain_text",
-                                        "text" => "いつも通り",
-                                        "emoji" => true
-                                    ],
-                                    "value" => "option_3"
-                                ],
-                                [
-                                    "text" => [
-                                        "type" => "plain_text",
-                                        "text" => "もやもやしている",
-                                        "emoji" => true
-                                    ],
-                                    "value" => "option_4"
-                                ],
-                                [
-                                    "text" => [
-                                        "type" => "plain_text",
-                                        "text" => "嫌な気分",
-                                        "emoji" => true
-                                    ],
-                                    "value" => "option_5"
-                                ]
+                            ]
+                        ]
+                    ],
+                    [
+                        'block_id' => 'block_id_text',
+                        'type' => 'input',
+                        'element' => [
+                            'type' => 'plain_text_input',
+                            'placeholder' => [
+                                'type' => 'plain_text',
+                                'text' => '記入内容は他のユーザーから閲覧されません',
                             ],
-                            "action_id" => "name_selection"
+                        ],
+                        'label' => [
+                            'type' => 'plain_text',
+                            'text' => '不安やストレスを文字にすると、少し楽になることがあります。',
+                            'emoji' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    // モーダルの送信ボタンを押下したとき
+    if ($payload['type'] === 'view_submission') {
+        $viewId = $payload['view']['root_view_id'];
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . env('SLACK_BOT_USER_TOKEN'),
+            'Content-Type' => 'application/json',
+        ])->post('https://slack.com/api/views.update',
+        // モーダルの内容を「記録しました」というコメントと、モーダルを閉じるボタンに変更
+        [
+            'view_id' => $viewId,
+            'view' => [
+                'type' => 'modal',
+                'callback_id' => 'submit_report',
+                'title' => [
+                    'type' => 'plain_text',
+                    'text' => date('Y/m/d'),
+                    'emoji' => true,
+                ],
+                'close' => [
+                    'type' => 'plain_text',
+                    'text' => '閉じる',
+                    'emoji' => true,
+                ],
+                'blocks' => [
+                    [
+                        "type" => "section",
+                        "text" => [
+                            "type" => "mrkdwn",
+                            "text" => "記録しました。"
                         ]
                     ]
                 ],
-                [
-                    'block_id' => 'block_id_text',
-                    'type' => 'input',
-                    'element' => [
-                        'type' => 'plain_text_input',
-                        'action_id' => 'plain_text_input-action',
-                        'placeholder' => [
-                            'type' => 'plain_text',
-                            'text' => '記入内容は他のユーザーから閲覧されません',
-                        ],
-                    ],
-                    'label' => [
-                        'type' => 'plain_text',
-                        'text' => '不安やストレスを文字にすると、少し楽になることがあります。',
-                        'emoji' => true,
-                    ],
-                ],
             ],
-        ],
-    ]);
+        ]);
 
-    if ($response->successful()) {
-        return response()->json(['status' => 'success']);
-    } else {
-        return response()->json(['status' => 'error', 'message' => $response->body()]);
+        if ($response->successful()) {
+            return response()->json(['status' => 'success']);
+        } else {
+            return response()->json(['status' => 'error', 'message' => $response->body()]);
+        }
     }
 });
 

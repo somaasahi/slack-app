@@ -238,6 +238,7 @@ Route::post('/slack/modal', function (Request $request) {
     if ($response->successful()) {
         return response()->json(['status' => 'success']);
     } else {
+        Log::error('Slack API error', ['response' => $response->body()]);
         return response()->json(['status' => 'error', 'message' => $response->body()]);
     }
 });
